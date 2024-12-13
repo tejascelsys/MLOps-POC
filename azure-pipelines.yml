@@ -1,5 +1,5 @@
-trigger:
-- main  # Set the branch that triggers the pipeline
+#trigger:
+#- main  # Set the branch that triggers the pipeline
 
 pr:
 - main  # Set the branch for pull request validation
