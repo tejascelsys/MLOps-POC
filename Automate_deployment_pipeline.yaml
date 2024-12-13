@@ -1,0 +1,34 @@
+trigger:
+- main  # Or specify the branch that should trigger the pipeline
+
+pool:
+  vmImage: 'windows-latest'  # Choose an appropriate VM image that has PowerShell installed
+
+variables:
+  # Define any variables needed for the script
+  deploymentPipelineName: 'Your Deployment Pipeline Name'
+  sourceStageName: 'Your Source Stage'
+  targetStageName: 'Your Target Stage'
+  deploymentNote: 'Optional Deployment Note'
+
+stages:
+- stage: DeployFabricPipeline
+  jobs:
+    - job: Deploy
+      steps:
+        - task: UseAzureCLI@2
+          displayName: 'Login to Azure CLI'
+          inputs:
+            azureSubscription: '<AzureServiceConnectionName>'  # Replace with your Azure service connection name
+
+        - task: PowerShell@2
+          displayName: 'Run PowerShell Script to Deploy Pipeline'
+          inputs:
+            targetType: 'filePath'
+            filePath: '$(Build.SourcesDirectory)/scripts/DeployAll.ps1'  # Path to your PowerShell script in the repo
+            arguments: |
+              -deploymentPipelineName $(deploymentPipelineName)
+              -sourceStageName $(sourceStageName)
+              -targetStageName $(targetStageName)
+              -deploymentNote $(deploymentNote)
+            push: true  # Use PowerShell Core
