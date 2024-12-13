@@ -1,0 +1,67 @@
+trigger:
+- main  # Set the branch that triggers the pipeline
+
+pr:
+- main  # Set the branch for pull request validation
+
+variables:
+  fabricWorkspace: '<Fabric Workspace ID>'
+  artifactId: '<Notebook Artifact ID>'
+  fabricApiUrl: 'https://api.fabric.microsoft.com'  # Base API URL for Fabric
+  fabricPAT: $(FABRIC_PAT)  # Azure DevOps PAT for Fabric API authentication
+
+jobs:
+- job: RunFabricNotebook
+  displayName: 'Run Notebook in Microsoft Fabric'
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: AzureCLI@2
+    displayName: 'Trigger Fabric Notebook Job'
+    inputs:
+      azureSubscription: '<Azure Subscription>'
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        echo "Triggering Fabric Notebook Job..."
+
+        # Construct the API request to trigger the notebook execution
+        response=$(curl -X POST "${fabricApiUrl}/v1/workspaces/${fabricWorkspace}/items/${artifactId}/jobs/instances?jobType=RunNotebook" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${fabricPAT}" \
+          -d '{
+                "executionData": {
+                    "parameters": {
+                        "parameterName": {
+                            "value": "new value",
+                            "type": "string"
+                        }
+                    },
+                    "configuration": {
+                        "conf": {
+                            "spark.conf1": "value"
+                        },
+                        "environment": {
+                            "id": "<environment_id>",
+                            "name": "<environment_name>"
+                        },
+                        "defaultLakehouse": {
+                            "name": "<lakehouse-name>",
+                            "id": "<lakehouse-id>"
+                        },
+                        "useStarterPool": false,
+                        "useWorkspacePool": "<workspace-pool-name>"
+                    }
+                }
+            }')
+
+        echo "Response: $response"
+
+        # Optionally, retrieve job status or logs if needed (use job instance location)
+        jobInstanceUrl=$(echo $response | jq -r '.Location')
+        echo "Job instance created at: $jobInstanceUrl"
+
+        # Optionally, poll the job status (optional based on your needs)
+        # response_status=$(curl -X GET "$jobInstanceUrl" -H "Authorization: Bearer ${fabricPAT}")
+        # echo "Job status: $response_status"
