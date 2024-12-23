@@ -1,5 +1,5 @@
-trigger:
-- main  # Or specify the branch that should trigger the pipeline
+#trigger:
+#- main  # Or specify the branch that should trigger the pipeline
 
 pool:
   vmImage: 'windows-latest'  # Choose an appropriate VM image that has PowerShell installed
