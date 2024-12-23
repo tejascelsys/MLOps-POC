@@ -1,14 +1,15 @@
-#trigger:
-#- main  # Set the branch that triggers the pipeline
+trigger:
+- main
 
 pr:
-- main  # Set the branch for pull request validation
+- main
 
 variables:
-  fabricWorkspace: '<Fabric Workspace ID>'
-  artifactId: '<Notebook Artifact ID>'
-  fabricApiUrl: 'https://api.fabric.microsoft.com'  # Base API URL for Fabric
-  fabricPAT: $(FABRIC_PAT)  # Azure DevOps PAT for Fabric API authentication
+  fabricWorkspace: $(fabricWorkspace)  # Workspace ID
+  artifactId: $(artifactId)            # Notebook/Artifact ID
+  azureTenantId: $(azureTenantId)      # Azure Tenant ID
+  clientId: $(clientId)                # App Registration Client ID
+  clientSecret: $(clientSecret)        # App Registration Client Secret (marked as secret)
 
 jobs:
 - job: RunFabricNotebook
@@ -17,51 +18,68 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
-  - task: AzureCLI@2
-    displayName: 'Trigger Fabric Notebook Job'
-    inputs:
-      azureSubscription: '<Azure Subscription>'
-      scriptType: bash
-      scriptLocation: inlineScript
-      inlineScript: |
+  - script: |
         echo "Triggering Fabric Notebook Job..."
 
-        # Construct the API request to trigger the notebook execution
-        response=$(curl -X POST "${fabricApiUrl}/v1/workspaces/${fabricWorkspace}/items/${artifactId}/jobs/instances?jobType=RunNotebook" \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${fabricPAT}" \
-          -d '{
-                "executionData": {
-                    "parameters": {
-                        "parameterName": {
-                            "value": "new value",
-                            "type": "string"
-                        }
-                    },
-                    "configuration": {
-                        "conf": {
-                            "spark.conf1": "value"
-                        },
-                        "environment": {
-                            "id": "<environment_id>",
-                            "name": "<environment_name>"
-                        },
-                        "defaultLakehouse": {
-                            "name": "<lakehouse-name>",
-                            "id": "<lakehouse-id>"
-                        },
-                        "useStarterPool": false,
-                        "useWorkspacePool": "<workspace-pool-name>"
-                    }
-                }
-            }')
+        # Function to get a new access token
+        get_access_token() {
+          echo "Requesting new access token..."
+          token_response=$(curl -X POST "https://login.microsoftonline.com/${azureTenantId}/oauth2/v2.0/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "client_id=${clientId}&scope=https://api.fabric.microsoft.com/.default&client_secret=${clientSecret}&grant_type=client_credentials")
+          access_token=$(echo $token_response | jq -r '.access_token')
+          if [[ -z "$access_token" || "$access_token" == "null" ]]; then
+            echo "Failed to retrieve access token."
+            exit 1
+          fi
+          echo $access_token
+        }
 
-        echo "Response: $response"
+        # Function to trigger the notebook job
+        trigger_notebook_job() {
+          local token=$1
+          echo "Sending API request with token..."
+          response=$(curl -X POST "https://api.fabric.microsoft.com/v1/workspaces/${fabricWorkspace}/items/${artifactId}/jobs/instances?jobType=RunNotebook" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${token}" \
+            -d '{
+                  "executionData": {
+                      "parameters": {},  # Add specific notebook parameters here if needed
+                      "configuration": {
+                          "conf": {
+                              "spark.master": "yarn"
+                          },                     
+                          "defaultLakehouse": {
+                              "name": "Electric_Vehicle",
+                              "id": "d46bc1e7-cd79-4d30-95af-bdbeebeffe2e",
+                              "workspaceId": "4e9ac160-b418-44de-99e1-874ff3fd479e"
+                          },
+                          "useStarterPool": false,
+                          "useWorkspacePool": "StarterPool"
+                      }
+                  }
+              }')
+          echo $response
+        }
 
-        # Optionally, retrieve job status or logs if needed (use job instance location)
-        jobInstanceUrl=$(echo $response | jq -r '.Location')
-        echo "Job instance created at: $jobInstanceUrl"
+        # Function to handle API response and retry if token expired
+        handle_response() {
+          local response=$1
+          if echo "$response" | grep -q '"errorCode": "TokenExpired"'; then
+            echo "Access token expired. Generating a new token and retrying..."
+            access_token=$(get_access_token)
+            response=$(trigger_notebook_job "$access_token")
+            handle_response "$response"
+          elif echo "$response" | grep -q "error"; then
+            echo "An error occurred: $response"
+            exit 1
+          else
+            echo "Notebook job triggered successfully."
+          fi
+        }
 
-        # Optionally, poll the job status (optional based on your needs)
-        # response_status=$(curl -X GET "$jobInstanceUrl" -H "Authorization: Bearer ${fabricPAT}")
-        # echo "Job status: $response_status"
+        # Main execution
+        access_token=$(get_access_token)
+        response=$(trigger_notebook_job "$access_token")
+        handle_response "$response"
+    displayName: 'Run Fabric Notebook'
