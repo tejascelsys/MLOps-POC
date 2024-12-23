@@ -59,7 +59,7 @@ jobs:
                       }
                   }
               }')
-        echo "Response: $response"
+        echo "Response from Fabric API: $response"
 
 
           # Log the raw response for debugging
