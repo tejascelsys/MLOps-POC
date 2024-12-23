@@ -59,7 +59,18 @@ jobs:
                       }
                   }
               }')
-          echo $response
+
+          # Log the raw response for debugging
+          echo "API Response: $response"
+
+          # Check if the job was created successfully and print additional details
+          job_instance_url=$(echo $response | jq -r '.Location')
+          if [[ "$job_instance_url" != "null" ]]; then
+            echo "Job successfully created. Monitor the job at: $job_instance_url"
+          else
+            echo "Failed to create job. Response: $response"
+            exit 1
+          fi
         }
 
         # Function to handle API response and retry if token expired
