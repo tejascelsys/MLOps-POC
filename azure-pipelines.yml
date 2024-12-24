@@ -56,7 +56,9 @@ jobs:
       trigger_notebook_job() {
         # local token=$1
         echo "Triggering Fabric Notebook Job with access token..."
-        response=$(curl -s -X POST "https://api.fabric.microsoft.com/v1/workspaces/$(FABRICWORKSPACEVAR)/items/$(ARTIFACTIDVAR)/jobs/instances?jobType=RunNotebook" \
+        echo "Access token being used: $TOKEN"
+
+        response=$(curl -s -X POST "https://api.fabric.microsoft.com/v1/workspaces/4e9ac160-b418-44de-99e1-874ff3fd479e/items/0a2296b1-c2fa-44b7-852c-754274b5b388/jobs/instances?jobType=RunNotebook" \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $TOKEN" \
           -d '{
