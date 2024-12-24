@@ -21,7 +21,7 @@ jobs:
   steps:
   - script: |
       echo "Debugging Secrets" 
-      echo "Client Secret: $clientSecret"
+      echo "Client Secret: $(CLIENTSECRETVAR)"
       echo "Starting Fabric Notebook Pipeline..."
 
       # Function to get a new access token
