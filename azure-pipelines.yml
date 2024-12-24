@@ -22,6 +22,7 @@ jobs:
   - script: |
       echo "Debugging Secrets" 
       echo "Client Secret: $(CLIENTSECRETVAR)"
+      echo "Client Id is : ${clientId}"
       echo "Starting Fabric Notebook Pipeline..."
 
       # Function to get a new access token
@@ -31,7 +32,7 @@ jobs:
         # Requesting the access token
         token_response=$(curl -s -X POST "https://login.microsoftonline.com/${azureTenantId}/oauth2/v2.0/token" \
           -H "Content-Type: application/x-www-form-urlencoded" \
-          -d "client_id=${clientId}&scope=https://api.fabric.microsoft.com/.default&client_secret=${clientSecret}&grant_type=client_credentials")
+          -d "client_id=${clientId}&scope=https://api.fabric.microsoft.com/.default&client_secret=$(CLIENTSECRETVAR)&grant_type=client_credentials")
         
         # Check the status of the response
         echo "Token Response: $token_response"
@@ -89,18 +90,19 @@ jobs:
       echo "Step 3: Notebook job triggered successfully."
       displayName: 'Run Fabric Notebook with Debugging'
       
-      echo "Testing token retrieval separately..."
+      # echo "Testing token retrieval separately..."
 
-      test_token_response=$(curl -X POST "https://login.microsoftonline.com/c5e52224-ee99-4449-86e4-9f71d30f361b/oauth2/v2.0/token" -H "Content-Type: application/x-www-form-urlencoded" -d "client_id=e4f3d468-692b-4545-9376-d50c634767aa&scope=https://api.fabric.microsoft.com/.default&client_secret=$(CLIENTSECRETVAR)&grant_type=client_credentials")
+      # test_token_response=$(curl -X POST "https://login.microsoftonline.com/c5e52224-ee99-4449-86e4-9f71d30f361b/oauth2/v2.0/token" -H "Content-Type: application/x-www-form-urlencoded" -d "client_id=e4f3d468-692b-4545-9376-d50c634767aa&scope=https://api.fabric.microsoft.com/.default&client_secret=$(CLIENTSECRETVAR)&grant_type=client_credentials")
 
-      # Print the raw response
-      echo "Raw Token Response: $test_token_response"      
-      test_access_token=$(echo "$test_token_response" | jq -r '.access_token')
+      # # Print the raw response
+      # echo "Raw Token Response: $test_token_response"      
+      # test_access_token=$(echo "$test_token_response" | jq -r '.access_token')
+  
 
-      if [[ -z "$test_access_token" || "$test_access_token" == "null" ]]; then
-        echo "Error: Failed to retrieve access token."
-        echo "Response: $test_token_response"
-        exit 1
-      else
-        echo "Successfully retrieved access token: $test_access_token"
-      fi
+      # if [[ -z "$test_access_token" || "$test_access_token" == "null" ]]; then
+      #   echo "Error: Failed to retrieve access token."
+      #   echo "Response: $test_token_response"
+      #   exit 1
+      # else
+      #   echo "Successfully retrieved access token: $test_access_token"
+      # fi
