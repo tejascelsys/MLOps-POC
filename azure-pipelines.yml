@@ -22,7 +22,7 @@ jobs:
   - script: |
       echo "Debugging Secrets" 
       echo "Client Secret: $(CLIENTSECRETVAR)"
-      echo "Client Id is : ${clientId}"
+      echo "Client Id is : $(CLIENTIDVAR)"
       echo "Starting Fabric Notebook Pipeline..."
 
       # Function to get a new access token
@@ -30,9 +30,9 @@ jobs:
         echo "Requesting a new access token..."
         
         # Requesting the access token
-        token_response=$(curl -s -X POST "https://login.microsoftonline.com/${azureTenantId}/oauth2/v2.0/token" \
+        token_response=$(curl -s -X POST "https://login.microsoftonline.com/$(AZURETENANTIDVAR)/oauth2/v2.0/token" \
           -H "Content-Type: application/x-www-form-urlencoded" \
-          -d "client_id=${clientId}&scope=https://api.fabric.microsoft.com/.default&client_secret=$(CLIENTSECRETVAR)&grant_type=client_credentials")
+          -d "client_id=$({CLIENTIDVAR)&scope=https://api.fabric.microsoft.com/.default&client_secret=$(CLIENTSECRETVAR)&grant_type=client_credentials")
         
         # Check the status of the response
         echo "Token Response: $token_response"
@@ -56,7 +56,7 @@ jobs:
       trigger_notebook_job() {
         local token=$1
         echo "Triggering Fabric Notebook Job with access token..."
-        response=$(curl -s -X POST "https://api.fabric.microsoft.com/v1/workspaces/${fabricWorkspace}/items/${artifactId}/jobs/instances?jobType=RunNotebook" \
+        response=$(curl -s -X POST "https://api.fabric.microsoft.com/v1/workspaces/$(FABRICWORKSPACEVAR)/items/$(ARTIFACTIDVAR)/jobs/instances?jobType=RunNotebook" \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer ${token}" \
           -d '{
