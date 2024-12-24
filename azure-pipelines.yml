@@ -91,7 +91,7 @@ jobs:
       
       echo "Testing token retrieval separately..."
 
-      test_token_response=$(curl -X POST "https://login.microsoftonline.com/c5e52224-ee99-4449-86e4-9f71d30f361b/oauth2/v2.0/token" -H "Content-Type: application/x-www-form-urlencoded" -d "client_id=e4f3d468-692b-4545-9376-d50c634767aa&scope=https://api.fabric.microsoft.com/.default&client_secret=${clientSecret}&grant_type=client_credentials")
+      test_token_response=$(curl -X POST "https://login.microsoftonline.com/c5e52224-ee99-4449-86e4-9f71d30f361b/oauth2/v2.0/token" -H "Content-Type: application/x-www-form-urlencoded" -d "client_id=e4f3d468-692b-4545-9376-d50c634767aa&scope=https://api.fabric.microsoft.com/.default&client_secret=$(CLIENTSECRETVAR)&grant_type=client_credentials")
 
       # Print the raw response
       echo "Raw Token Response: $test_token_response"      
