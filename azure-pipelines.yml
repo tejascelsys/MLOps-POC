@@ -25,27 +25,29 @@ jobs:
       # Function to get a new access token
       get_access_token() {
         echo "Requesting a new access token..."
+        
+        # Requesting the access token
         token_response=$(curl -s -X POST "https://login.microsoftonline.com/${azureTenantId}/oauth2/v2.0/token" \
           -H "Content-Type: application/x-www-form-urlencoded" \
           -d "client_id=${clientId}&scope=https://api.fabric.microsoft.com/.default&client_secret=${clientSecret}&grant_type=client_credentials")
         
-        http_status=$(echo "$token_response" | tail -n 1)  # Extract the HTTP status code
-        token_body=$(echo "$token_response" | sed '$d')  # Extract the response body without the status code
+        # Check the status of the response
+        echo "Token Response: $token_response"
+        
+        # Extract access token using jq
+        access_token=$(echo "$token_response" | jq -r '.access_token')
 
-        echo "HTTP Status Code: $http_status"
-        echo "Raw Token Response: $token_body"
-        echo "Raw Token Response: ${token_response:0:50}"  # Log the raw token response for debugging
-
-        access_token=$(echo "$token_response" | jq -r '.access_token' 2>/dev/null)
-
+        # Verify if the token is retrieved
         if [[ -z "$access_token" || "$access_token" == "null" ]]; then
-          echo "Error: Failed to parse access token from the response."
+          echo "Error: Failed to retrieve access token from response."
+          echo "Response Body: $token_response"
           exit 1
         fi
 
-        echo "Parsed Access Token: $access_token"  # Log the parsed token for verification
+        echo "Access Token: $access_token"  # Log the access token for debugging
         echo $access_token
       }
+
 
       # Function to trigger the notebook job
       trigger_notebook_job() {
