@@ -32,7 +32,7 @@ jobs:
         # Requesting the access token
         token_response=$(curl -s -X POST "https://login.microsoftonline.com/$(AZURETENANTIDVAR)/oauth2/v2.0/token" \
           -H "Content-Type: application/x-www-form-urlencoded" \
-          -d "client_id=$({CLIENTIDVAR)&scope=https://api.fabric.microsoft.com/.default&client_secret=$(CLIENTSECRETVAR)&grant_type=client_credentials")
+          -d "client_id=$(CLIENTIDVAR)&scope=https://api.fabric.microsoft.com/.default&client_secret=$(CLIENTSECRETVAR)&grant_type=client_credentials")
         
         # Check the status of the response
         echo "Token Response: $token_response"
@@ -88,7 +88,7 @@ jobs:
       trigger_notebook_job "$access_token"
 
       echo "Step 3: Notebook job triggered successfully."
-      displayName: 'Run Fabric Notebook with Debugging'
+    # displayName: 'Run Fabric Notebook with Debugging'
       
       # echo "Testing token retrieval separately..."
 
