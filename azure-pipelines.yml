@@ -95,3 +95,12 @@ jobs:
 
       # Print the raw response
       echo "Raw Token Response: $test_token_response"      
+      test_access_token=$(echo "$test_token_response" | jq -r '.access_token')
+
+      if [[ -z "$test_access_token" || "$test_access_token" == "null" ]]; then
+        echo "Error: Failed to retrieve access token."
+        echo "Response: $test_token_response"
+        exit 1
+      else
+        echo "Successfully retrieved access token: $test_access_token"
+      fi
