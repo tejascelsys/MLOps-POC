@@ -20,6 +20,8 @@ jobs:
 
   steps:
   - script: |
+      echo "Debugging Secrets" 
+      echo "Client Secret: $clientSecret"
       echo "Starting Fabric Notebook Pipeline..."
 
       # Function to get a new access token
