@@ -83,13 +83,14 @@ jobs:
       }
 
       # Main execution
-      echo "Step 1: Retrieving access token..."
-      access_token=$(get_access_token)
+      # echo "Step 1: Retrieving access token..."
+      # access_token=$(get_access_token)
       
-      echo "Step 2: Triggering the notebook job..."
-      trigger_notebook_job "$access_token"
+      # echo "Step 2: Triggering the notebook job..."
+      trigger_notebook_job 
+      # "$access_token"
 
-      echo "Step 3: Notebook job triggered successfully."
+      # echo "Step 3: Notebook job triggered successfully."
        # displayName: 'Run Fabric Notebook with Debugging'
       
       # echo "Testing token retrieval separately..."
