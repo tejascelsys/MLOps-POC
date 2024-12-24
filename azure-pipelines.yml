@@ -25,31 +25,31 @@ jobs:
       echo "Client Id is : $(CLIENTIDVAR)"
       echo "Starting Fabric Notebook Pipeline..."
 
-      # Function to get a new access token
-      get_access_token() {
-        echo "Requesting a new access token..."
+      # # Function to get a new access token
+      # get_access_token() {
+      #   echo "Requesting a new access token..."
         
-        # Requesting the access token
-        token_response=$(curl -s -X POST "https://login.microsoftonline.com/$(AZURETENANTIDVAR)/oauth2/v2.0/token" \
-          -H "Content-Type: application/x-www-form-urlencoded" \
-          -d "client_id=$(CLIENTIDVAR)&scope=https://api.fabric.microsoft.com/.default&client_secret=$(CLIENTSECRETVAR)&grant_type=client_credentials")
+      #   # Requesting the access token
+      #   token_response=$(curl -s -X POST "https://login.microsoftonline.com/$(AZURETENANTIDVAR)/oauth2/v2.0/token" \
+      #     -H "Content-Type: application/x-www-form-urlencoded" \
+      #     -d "client_id=$(CLIENTIDVAR)&scope=https://api.fabric.microsoft.com/.default&client_secret=$(CLIENTSECRETVAR)&grant_type=client_credentials")
         
-        # Check the status of the response
-        echo "Token Response: $token_response"
+      #   # Check the status of the response
+      #   echo "Token Response: $token_response"
         
-        # Extract access token using jq
-        access_token=$(echo "$token_response" | jq -r '.access_token')
+      #   # Extract access token using jq
+      #   access_token=$(echo "$token_response" | jq -r '.access_token')
 
-        # Verify if the token is retrieved
-        if [[ -z "$access_token" || "$access_token" == "null" ]]; then
-          echo "Error: Failed to retrieve access token from response."
-          echo "Response Body: $token_response"
-          exit 1
-        fi
+      #   # Verify if the token is retrieved
+      #   if [[ -z "$access_token" || "$access_token" == "null" ]]; then
+      #     echo "Error: Failed to retrieve access token from response."
+      #     echo "Response Body: $token_response"
+      #     exit 1
+      #   fi
 
-        echo "Access Token: $access_token"  # Log the access token for debugging
-        echo $access_token
-      }
+      #   echo "Access Token: $access_token"  # Log the access token for debugging
+      #   echo $access_token
+      # }
 
 
       # Function to trigger the notebook job
