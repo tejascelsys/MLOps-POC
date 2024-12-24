@@ -5,11 +5,11 @@ pr:
 - main
 
 variables:
-  fabricWorkspace: $(fabricWorkspace)  # Workspace ID
-  artifactId: $(artifactId)            # Notebook/Artifact ID
-  azureTenantId: $(azureTenantId)      # Azure Tenant ID
-  clientId: $(clientId)                # App Registration Client ID
-  clientSecret: $(clientSecret)        # App Registration Client Secret (marked as secret)
+  fabricWorkspace: $(fabricWorkspaceVar)  # Workspace ID
+  artifactId: $(artifactIdVar)            # Notebook/Artifact ID
+  azureTenantId: $(azureTenantIdVar)      # Azure Tenant ID
+  clientId: $(clientIdVar)                # App Registration Client ID
+  clientSecret: $(clientSecretVar)        # App Registration Client Secret (marked as secret)
 
 jobs:
 - job: RunFabricNotebook
