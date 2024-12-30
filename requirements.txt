@@ -1,5 +1,6 @@
-azure-fabric
 sklearn
 pandas
 numpy
 matplotlib
+azure-mgmt-resource
+azure-identity
