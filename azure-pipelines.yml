@@ -24,6 +24,13 @@ jobs:
       echo "Client Secret: $(CLIENTSECRETVAR)"
       echo "Client Id is : $(CLIENTIDVAR)"
       echo "Starting Fabric Notebook Pipeline..."
+     
+      #removing after use
+      curl -O https://raw.githubusercontent.com/tejascelsys/MLOps-POC/refs/heads/v3/requirements.txt
+      pip install azure-fabric
+      pip install -r requirements.txt
+
+ 
 
       # Function to get a new access token
       # get_access_token() {
