@@ -27,7 +27,6 @@ jobs:
      
       #removing after use
       curl -O https://raw.githubusercontent.com/tejascelsys/MLOps-POC/refs/heads/v3/requirements.txt
-      pip install azure-fabric
       pip install -r requirements.txt
 
  
