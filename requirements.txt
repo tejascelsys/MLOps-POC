@@ -1,0 +1,5 @@
+azure-fabric
+sklearn
+pandas
+numpy
+matplotlib
