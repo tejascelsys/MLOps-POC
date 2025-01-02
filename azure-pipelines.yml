@@ -3,55 +3,67 @@ trigger:
     include:
       - main
 
-jobs:
-- job: GenerateToken
+variables:
+  fabricWorkspace: $(fabricWorkspaceVar)  # Workspace ID
+  artifactId: $(artifactIdVar)            # Notebook/Artifact ID
+  azureTenantId: $(azureTenantIdVar)      # Azure Tenant ID
+  clientId: $(clientIdVar)                # App Registration Client ID
+  clientSecret: $(clientSecretVar)        # App Registration Client Secret (marked as secret)
+  System.Debug: true
+
+stages:
+- stage: GenerateAccessToken
   displayName: 'Generate Access Token'
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-  - script: |
-      echo "Requesting a new access token..."
-      test_token_response=$(curl -X POST "https://login.microsoftonline.com/$(azureTenantId)/oauth2/v2.0/token" \
-        -H "Content-Type: application/x-www-form-urlencoded" \
-        -d "client_id=$(clientId)&scope=https://api.fabric.microsoft.com/.default&client_secret=$(clientSecret)&grant_type=client_credentials")
-      
-      echo "Raw Token Response: $test_token_response"
-      export accessToken=$(echo "$test_token_response" | jq -r '.access_token')
-      echo "Access token: $accessToken"
-    displayName: 'Generate Access Token'
+  jobs:
+  - job: TokenGeneration
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        echo "Requesting a new access token..."
+        test_token_response=$(curl -X POST "https://login.microsoftonline.com/$(azureTenantId)/oauth2/v2.0/token" \
+          -H "Content-Type: application/x-www-form-urlencoded" \
+          -d "client_id=$(clientId)&scope=https://api.fabric.microsoft.com/.default&client_secret=$(clientSecret)&grant_type=client_credentials")
+        
+        echo "Raw Token Response: $test_token_response"
+        accessToken=$(echo "$test_token_response" | jq -r '.access_token')
+        echo "Access token: $accessToken"
 
-- job: TriggerNotebookExecution
-  displayName: 'Trigger Fabric Notebook Execution'
-  dependsOn: GenerateToken
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-  - script: |
-      echo "Triggering Fabric Notebook Job with access token..."
-      echo "Access token being used: $accessToken"
+        echo "##vso[task.setvariable variable=accessToken]$accessToken"  # Set the access token as a variable to use in the next stage
+      displayName: 'Generate Access Token'
 
-      response=$(curl -s -X POST "https://api.fabric.microsoft.com/v1/workspaces/4e9ac160-b418-44de-99e1-874ff3fd479e/items/0a2296b1-c2fa-44b7-852c-754274b5b388/jobs/instances?jobType=RunNotebook" \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $accessToken" \
-        -d '{
-              "executionData": {
-                  "parameters": {},
-                  "configuration": {
-                      "conf": {
-                          "spark.master": "yarn"
-                      },
-                      "defaultLakehouse": {
-                          "name": "Electric_Vehicle",
-                          "id": "d46bc1e7-cd79-4d30-95af-bdbeebeffe2e",
-                          "workspaceId": "4e9ac160-b418-44de-99e1-874ff3fd479e"
-                      },
-                      "useStarterPool": false,
-                      "useWorkspacePool": "StarterPool"
-                  }
-              }
-          }')
+- stage: TriggerFabricNotebookJob
+  displayName: 'Trigger Fabric Notebook Job'
+  dependsOn: GenerateAccessToken  # Make this stage dependent on the first stage
+  jobs:
+  - job: NotebookExecution
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        echo "Triggering Fabric Notebook Job with access token..."
+        echo "Access token being used: $(accessToken)"
 
-      echo "Raw API Response: $response"  # Log the raw API response
-    displayName: 'Trigger Fabric Notebook Job'
-    env:
-      accessToken: $(accessToken)  # Pass the token as an environment variable to the next step
+        response=$(curl -s -X POST "https://api.fabric.microsoft.com/v1/workspaces/4e9ac160-b418-44de-99e1-874ff3fd479e/items/0a2296b1-c2fa-44b7-852c-754274b5b388/jobs/instances?jobType=RunNotebook" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $(accessToken)" \
+          -d '{
+                "executionData": {
+                    "parameters": {},
+                    "configuration": {
+                        "conf": {
+                            "spark.master": "yarn"
+                        },
+                        "defaultLakehouse": {
+                            "name": "Electric_Vehicle",
+                            "id": "d46bc1e7-cd79-4d30-95af-bdbeebeffe2e",
+                            "workspaceId": "4e9ac160-b418-44de-99e1-874ff3fd479e"
+                        },
+                        "useStarterPool": false,
+                        "useWorkspacePool": "StarterPool"
+                    }
+                }
+            }')
+
+        echo "Raw API Response: $response"  # Log the raw API response
+      displayName: 'Trigger Fabric Notebook Job'
