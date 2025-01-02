@@ -17,14 +17,14 @@
 # Parameters - fill these in before running the script!
 # =====================================================
 
-$deploymentPipelineName = "<DEPLOYMENT PIPELINE NAME>"      # The name of the deployment pipeline
-$sourceStageName = "<SOURCE STAGE NAME>"                    # The name of the source stage
-$targetStageName = "<TARGET STAGE NAME>"                    # The name of the target stage
-$deploymentNote = "<DEPLOYMENT NOTE>"                       # The deployment note (Optional)
+$deploymentPipelineName = "Electric-Vehicles"      # The name of the deployment pipeline
+$sourceStageName = "Development"                    # The name of the source stage
+$targetStageName = "Test"                    # The name of the target stage
+#$deploymentNote = "<DEPLOYMENT NOTE>"                       # The deployment note (Optional)
 
 # End Parameters =======================================
 
-$global:baseUrl = "<Base URL>" # Replace with environment-specific base URL. For example: "https://api.fabric.microsoft.com/v1"
+$global:baseUrl = "https://api.fabric.microsoft.com/v1" # Replace with environment-specific base URL. For example: "https://api.fabric.microsoft.com/v1"
 
 $global:resourceUrl = "https://api.fabric.microsoft.com"
 
