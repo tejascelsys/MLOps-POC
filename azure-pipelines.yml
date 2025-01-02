@@ -29,12 +29,15 @@ stages:
         accessToken=$(echo "$test_token_response" | jq -r '.access_token')
         echo "Access token: $accessToken"
 
-        echo "##vso[task.setvariable variable=accessToken]$accessToken"  # Set the access token as a variable to use in the next stage
+        # Mark the access token as an output variable
+        echo "##vso[task.setvariable variable=accessToken;isOutput=true]$accessToken"
       displayName: 'Generate Access Token'
 
 - stage: TriggerFabricNotebookJob
   displayName: 'Trigger Fabric Notebook Job'
   dependsOn: GenerateAccessToken  # Make this stage dependent on the first stage
+  variables:
+    accessToken: $[ dependencies.GenerateAccessToken.outputs['TokenGeneration.accessToken'] ]  # Reference the output variable
   jobs:
   - job: NotebookExecution
     pool:
@@ -44,7 +47,7 @@ stages:
         echo "Triggering Fabric Notebook Job with access token..."
         echo "Access token being used: $(accessToken)"
 
-        response=$(curl -s -X POST "https://api.fabric.microsoft.com/v1/workspaces/4e9ac160-b418-44de-99e1-874ff3fd479e/items/0a2296b1-c2fa-44b7-852c-754274b5b388/jobs/instances?jobType=RunNotebook" \
+        response=$(curl -s -X POST "https://api.fabric.microsoft.com/v1/workspaces/$(fabricWorkspace)/items/$(artifactId)/jobs/instances?jobType=RunNotebook" \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $(accessToken)" \
           -d '{
@@ -57,7 +60,7 @@ stages:
                         "defaultLakehouse": {
                             "name": "Electric_Vehicle",
                             "id": "d46bc1e7-cd79-4d30-95af-bdbeebeffe2e",
-                            "workspaceId": "4e9ac160-b418-44de-99e1-874ff3fd479e"
+                            "workspaceId": "$(fabricWorkspace)"
                         },
                         "useStarterPool": false,
                         "useWorkspacePool": "StarterPool"
