@@ -35,9 +35,10 @@ stages:
 
 - stage: TriggerFabricNotebookJob
   displayName: 'Trigger Fabric Notebook Job'
-  dependsOn: GenerateAccessToken  # Make this stage dependent on the first stage
+  dependsOn: GenerateAccessToken  # Ensure this stage runs after GenerateAccessToken
   variables:
-    accessToken: $[ dependencies.GenerateAccessToken.outputs['TokenGeneration.accessToken'] ]  # Reference the output variable
+    # Reference the output variable explicitly
+    accessToken: $[ dependencies.GenerateAccessToken.outputs['TokenGeneration.accessToken'] ]
   jobs:
   - job: NotebookExecution
     pool:
